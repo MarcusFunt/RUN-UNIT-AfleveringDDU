@@ -26,6 +26,7 @@ var _goal_marker: Marker2D = null
 var _completion_trigger: Area2D = null
 var _checkpoints: Array[Vector2] = []
 
+
 func _ready() -> void:
 	_semantic_layer = _find_layer(&"Semantic")
 	if _semantic_layer == null:
@@ -39,12 +40,15 @@ func _ready() -> void:
 	_load_semantic_hazards_from_tilemap()
 	_ensure_completion_trigger()
 
+
 func set_level_profile(_level_index: int) -> void:
 	pass
+
 
 func reset(_run_seed: int = 0, _mode: String = "campaign") -> void:
 	_completion_triggered = false
 	propagate_call(&"reset_level_state")
+
 
 func get_route_length() -> float:
 	var route_end: float = 0.0
@@ -53,21 +57,26 @@ func get_route_length() -> float:
 		route_end = maxf(route_end, platform_end)
 	return route_end / tile_size
 
+
 func get_traversal_length() -> float:
 	if has_goal():
 		return absf(get_goal_position().x - get_spawn_position().x) / tile_size
 	return maxf(get_route_length() - to_local(get_spawn_position()).x / tile_size, 0.0)
 
+
 func is_completion_triggered() -> bool:
 	return _completion_triggered
+
 
 func get_spawn_position() -> Vector2:
 	if _spawn_marker == null:
 		return FALLBACK_SPAWN_POSITION
 	return _spawn_marker.global_position
 
+
 func get_checkpoint_positions() -> Array[Vector2]:
 	return _checkpoints.duplicate()
+
 
 func _collect_checkpoints() -> void:
 	_checkpoints.clear()
@@ -79,13 +88,16 @@ func _collect_checkpoints() -> void:
 			_checkpoints.append((node as Marker2D).global_position)
 	_checkpoints.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.x < b.x)
 
+
 func has_goal() -> bool:
 	return _goal_marker != null
+
 
 func get_goal_position() -> Vector2:
 	if _goal_marker == null:
 		return Vector2.ZERO
 	return _goal_marker.global_position
+
 
 func _ensure_completion_trigger() -> void:
 	_completion_trigger = get_node_or_null("CompletionTrigger") as Area2D
@@ -105,11 +117,14 @@ func _ensure_completion_trigger() -> void:
 	if _completion_trigger != null and not _completion_trigger.body_entered.is_connected(_on_completion_trigger_body_entered):
 		_completion_trigger.body_entered.connect(_on_completion_trigger_body_entered)
 
+
 func _find_layer(layer_name: StringName) -> TileMapLayer:
 	return _find_node_of_type(self, layer_name, "TileMapLayer") as TileMapLayer
 
+
 func _find_marker(marker_name: StringName) -> Marker2D:
 	return _find_node_of_type(self, marker_name, "Marker2D") as Marker2D
+
 
 func _find_node_of_type(node: Node, wanted_name: StringName, wanted_class: String) -> Node:
 	for child: Node in node.get_children():
@@ -120,13 +135,15 @@ func _find_node_of_type(node: Node, wanted_name: StringName, wanted_class: Strin
 			return found
 	return null
 
+
 func _cell_semantic(cell: Vector2i) -> int:
 	var data: TileData = _semantic_layer.get_cell_tile_data(cell)
 	if data == null:
 		return SEMANTIC_EMPTY
 	return int(data.get_custom_data("semantic"))
 
-# Turn the semantic tile layer into continuous platform runs.
+
+# The TileMap is just the level plan here; build the usable platform runs when the scene loads.
 func _load_platforms_from_tilemap() -> void:
 	_platforms.clear()
 	if _semantic_layer == null:
@@ -180,6 +197,7 @@ func _load_platforms_from_tilemap() -> void:
 		found[index]["platform_id"] = index + 1
 	_platforms = found
 
+
 func _load_semantic_hazards_from_tilemap() -> void:
 	if _semantic_layer == null:
 		return
@@ -221,6 +239,7 @@ func _load_semantic_hazards_from_tilemap() -> void:
 			end_x = next_x
 		_create_semantic_hazard_run(container, y, start_x, end_x)
 
+
 func _create_semantic_hazard_run(container: Node2D, y: int, start_x: int, end_x: int) -> void:
 	var hazard: RunUnitHazardArea = RunUnitHazardArea.new()
 	hazard.name = "Hazard_%d_%d_%d" % [y, start_x, end_x]
@@ -240,6 +259,7 @@ func _create_semantic_hazard_run(container: Node2D, y: int, start_x: int, end_x:
 	var last_center: Vector2 = _semantic_layer.map_to_local(Vector2i(end_x, y))
 	hazard.position = (first_center + last_center) * 0.5
 	container.add_child(hazard)
+
 
 func _on_completion_trigger_body_entered(body: Node2D) -> void:
 	if _completion_triggered or not body is RunUnitPlayerMotor:

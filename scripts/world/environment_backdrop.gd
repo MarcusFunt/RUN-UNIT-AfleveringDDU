@@ -5,15 +5,16 @@ extends Node2D
 
 const INK := Color(0.008, 0.025, 0.036, 0.92)
 const PANEL := Color(0.025, 0.075, 0.09, 0.78)
-const PANEL_LIFT := Color(0.045, 0.13, 0.15, 0.62)
 const STEEL := Color(0.075, 0.18, 0.20, 0.72)
 const CYAN := Color(0.28, 0.82, 0.84, 0.42)
 const CYAN_DIM := Color(0.14, 0.45, 0.50, 0.30)
 const AMBER := Color(1.0, 0.48, 0.15, 0.46)
 const WINDOW := Color(0.18, 0.52, 0.58, 0.30)
 
+
 func _ready() -> void:
 	queue_redraw()
+
 
 func _draw() -> void:
 	match theme:
@@ -25,6 +26,8 @@ func _draw() -> void:
 			_draw_recovery()
 		"beacon":
 			_draw_beacon()
+
+
 func _draw_tutorial() -> void:
 	_draw_pipe(Vector2(-100, 110), Vector2(2300, 110), 10.0, STEEL)
 	_draw_pipe(Vector2(-100, 142), Vector2(2300, 142), 5.0, CYAN_DIM)
@@ -43,6 +46,7 @@ func _draw_tutorial() -> void:
 	_draw_rib(1870, 42, 470, 18.0)
 	_draw_rib(2040, 42, 470, 18.0)
 	draw_rect(Rect2(1870, 66, 170, 12), AMBER, true)
+
 
 func _draw_factory() -> void:
 	_draw_pipe(Vector2(-80, 96), Vector2(2700, 96), 12.0, STEEL)
@@ -72,6 +76,7 @@ func _draw_factory() -> void:
 				draw_rect(Rect2(x + 18, yy, 8, 4), WINDOW, true)
 	_draw_pipe(Vector2(6200, 286), Vector2(8840, 238), 4.0, Color(0.12, 0.34, 0.36, 0.42))
 
+
 func _draw_recovery() -> void:
 	for x: float in range(-160, 4800, 720):
 		_draw_city_pylon(x, 176, 530)
@@ -96,6 +101,8 @@ func _draw_recovery() -> void:
 	_draw_light(Vector2(9184, 226), Color(0.40, 0.95, 0.94, 0.58), 26.0)
 	for x: float in range(10060, 12900, 420):
 		_draw_city_pylon(x, 220, 550)
+
+
 func _draw_beacon() -> void:
 	for x: float in range(-120, 9300, 1120):
 		var height: float = 330.0 + float(posmod(int(x / 40.0), 4)) * 70.0
@@ -122,25 +129,31 @@ func _draw_beacon() -> void:
 	for y: float in range(-260, 900, 220):
 		draw_rect(Rect2(14160, y, 2100, 8), Color(0.055, 0.14, 0.16, 0.42), true)
 
+
 func _draw_bay(x: float, y: float, width: float, height: float, lit: bool) -> void:
 	draw_rect(Rect2(x, y, width, height), PANEL, true)
 	draw_rect(Rect2(x + 14, y + 16, width - 28, height - 32), INK, true)
 	draw_rect(Rect2(x + 24, y + 30, width - 48, 8), STEEL, true)
 	if lit:
 		draw_rect(Rect2(x + 24, y + 46, width * 0.42, 4), CYAN_DIM, true)
+
+
 func _draw_rib(x: float, top: float, bottom: float, width: float = 11.0) -> void:
 	draw_rect(Rect2(x, top, width, bottom - top), STEEL, true)
 	draw_line(Vector2(x + width, top), Vector2(x + width, bottom), Color(0.12, 0.30, 0.31, 0.42), 2.0)
 	draw_line(Vector2(x + width, bottom - 82), Vector2(x + 48, bottom), Color(0.06, 0.16, 0.18, 0.56), 6.0)
+
 
 func _draw_pipe(a: Vector2, b: Vector2, width: float, color: Color) -> void:
 	draw_line(a, b, color, width)
 	draw_circle(a, width * 0.62, color)
 	draw_circle(b, width * 0.62, color)
 
+
 func _draw_light(position: Vector2, color: Color, size: float = 14.0) -> void:
 	draw_rect(Rect2(position - Vector2(size * 0.8, size * 0.28), Vector2(size * 1.6, size * 0.56)), color, true)
 	draw_rect(Rect2(position - Vector2(size * 1.8, size * 0.55), Vector2(size * 3.6, size * 1.1)), Color(color.r, color.g, color.b, color.a * 0.12), true)
+
 
 func _draw_fan(center: Vector2, radius: float, color: Color) -> void:
 	draw_circle(center, radius, Color(color.r, color.g, color.b, color.a * 0.24))
@@ -151,6 +164,7 @@ func _draw_fan(center: Vector2, radius: float, color: Color) -> void:
 		draw_line(center + direction * radius * 0.18, center + direction * radius * 0.62, color, maxf(radius * 0.14, 6.0))
 	draw_circle(center, radius * 0.13, color)
 
+
 func _draw_tank(rect: Rect2) -> void:
 	var body := Color(0.035, 0.11, 0.13, 0.48)
 	var edge := Color(0.09, 0.25, 0.27, 0.44)
@@ -160,6 +174,7 @@ func _draw_tank(rect: Rect2) -> void:
 	for y: float in [rect.position.y + rect.size.y * 0.35, rect.position.y + rect.size.y * 0.68]:
 		draw_rect(Rect2(rect.position.x - 8, y, rect.size.x + 16, 7), edge, true)
 	_draw_light(rect.position + Vector2(rect.size.x * 0.5, 58), AMBER, 10.0)
+
 
 func _draw_city_pylon(x: float, top: float, bottom: float) -> void:
 	var silhouette := Color(0.014, 0.055, 0.066, 0.48)

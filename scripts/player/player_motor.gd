@@ -45,6 +45,7 @@ var _standing_collision_position: Vector2 = Vector2.ZERO
 var _hitstun_remaining: float = 0.0
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 
+
 func _ready() -> void:
 	var rectangle: RectangleShape2D = _collision_shape.shape as RectangleShape2D
 	if rectangle != null:
@@ -53,8 +54,10 @@ func _ready() -> void:
 		_standing_collision_height = rectangle.size.y
 		_standing_collision_position = _collision_shape.position
 
+
 func set_action(action: RunUnitPlayerAction) -> void:
 	_action = action.duplicate_action()
+
 
 func reset_motor() -> void:
 	velocity = Vector2.ZERO
@@ -73,14 +76,14 @@ func reset_motor() -> void:
 	_hitstun_remaining = 0.0
 	_update_crouch_collision()
 
+
 func is_charging() -> bool:
 	return _is_charging
+
 
 func is_crouching() -> bool:
 	return _is_crouching
 
-func is_in_hitstun() -> bool:
-	return _hitstun_remaining > 0.0
 
 func apply_knockback(impulse: Vector2, hitstun_seconds: float = 0.15) -> void:
 	velocity = impulse
@@ -91,25 +94,6 @@ func apply_knockback(impulse: Vector2, hitstun_seconds: float = 0.15) -> void:
 	_jump_press_buffer_remaining = 0.0
 	_released_charge_ratio = 0.0
 
-func has_low_clearance_ahead(lookahead_distance: float) -> bool:
-	if _collision_shape == null or _standing_collision_height <= crouch_collision_height:
-		return false
-	var rectangle: RectangleShape2D = _collision_shape.shape as RectangleShape2D
-	if rectangle == null:
-		return false
-	var extension_height: float = _standing_collision_height - crouch_collision_height
-	var extension_shape: RectangleShape2D = RectangleShape2D.new()
-	extension_shape.size = Vector2(rectangle.size.x, extension_height)
-	var strip_center_y: float = _standing_collision_position.y + _standing_collision_height * 0.5 - (_standing_collision_height + crouch_collision_height) * 0.5
-	var query: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
-	query.shape = extension_shape
-	query.transform = global_transform * Transform2D(0.0, Vector2(lookahead_distance, strip_center_y))
-	query.collision_mask = collision_mask
-	query.exclude = [get_rid()]
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-	query.margin = 0.0
-	return not get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 func _physics_process(delta: float) -> void:
 	var started_on_floor: bool = is_on_floor()
@@ -143,6 +127,7 @@ func _physics_process(delta: float) -> void:
 		_release_buffer_remaining = 0.0
 		_jump_press_buffer_remaining = 0.0
 
+	# Hold first, release to actually fire the spring jump.
 	var wants_to_crouch: bool = not in_hitstun and _action.crouch_held and started_on_floor and not _action.jump_held
 	_update_crouch_state(wants_to_crouch, delta)
 
@@ -181,6 +166,7 @@ func _physics_process(delta: float) -> void:
 	_was_on_floor = is_on_floor()
 	_hitstun_remaining = maxf(_hitstun_remaining - delta, 0.0)
 
+
 func _update_crouch_collision() -> void:
 	if _collision_shape == null or _standing_collision_height <= 0.0:
 		return
@@ -191,6 +177,7 @@ func _update_crouch_collision() -> void:
 	rectangle.size = Vector2(rectangle.size.x, height)
 	_collision_shape.position = _standing_collision_position + Vector2(0.0, (_standing_collision_height - height) * 0.5)
 
+
 func _update_crouch_state(wants_to_crouch: bool, delta: float) -> void:
 	var target_crouch_ratio: float = 1.0 if wants_to_crouch else 0.0
 	var next_crouch_ratio: float = move_toward(crouch_ratio, target_crouch_ratio, delta / crouch_transition_time)
@@ -199,6 +186,7 @@ func _update_crouch_state(wants_to_crouch: bool, delta: float) -> void:
 	crouch_ratio = next_crouch_ratio
 	_is_crouching = crouch_ratio > 0.001
 	_update_crouch_collision()
+
 
 func _can_expand_to(target_crouch_ratio: float) -> bool:
 	if _collision_shape == null or _standing_collision_height <= 0.0:
