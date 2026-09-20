@@ -5,9 +5,11 @@ extends Node2D
 
 var _mounted_module: Node2D = null
 
+
 func _ready() -> void:
 	module_template.visible = false
 	reset_level_state()
+
 
 func reset_level_state() -> void:
 	RunUnitModuleMount.clear(_mounted_module)
@@ -16,15 +18,15 @@ func reset_level_state() -> void:
 	if player != null:
 		_mounted_module = RunUnitModuleMount.mount(player, module_template)
 
+
 func get_mounted_module() -> Node2D:
 	return _mounted_module if is_instance_valid(_mounted_module) else null
 
-func is_carried() -> bool:
-	return get_mounted_module() != null
 
 func stow() -> void:
 	RunUnitModuleMount.clear(_mounted_module)
 	_mounted_module = null
+
 
 func _find_player() -> RunUnitPlayerMotor:
 	var host: Node = get_parent()

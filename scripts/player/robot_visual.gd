@@ -53,6 +53,7 @@ var _antenna_angle: float = 0.0
 var _antenna_velocity: float = 0.0
 var _previous_velocity_x: float = 0.0
 
+
 func _ready() -> void:
 	body_pivot.position = body_to_wheel_offset
 	upper_link_pivot.position = body_to_wheel_offset
@@ -61,6 +62,7 @@ func _ready() -> void:
 	if player != null:
 		player.jumped.connect(_on_player_jumped)
 		player.landed.connect(_on_player_landed)
+
 
 func _process(delta: float) -> void:
 	_update_facing()
@@ -88,6 +90,7 @@ func _process(delta: float) -> void:
 	_apply_pose(pose["upper_deg"], pose["knee_deg"], pose["body_lean"], _wheel_spin)
 	_apply_antenna_overhead_contact()
 
+
 func _update_facing() -> void:
 	if player == null:
 		return
@@ -95,13 +98,16 @@ func _update_facing() -> void:
 		_facing_left = player.velocity.x < 0.0
 	scale.x = 1.0 if _facing_left else -1.0
 
+
 func _advance_visual_clock(delta: float) -> void:
 	_visual_time += delta
+
 
 func _speed_ratio() -> float:
 	if player == null or player.max_run_speed <= 0.001:
 		return 0.0
 	return clampf(absf(player.velocity.x) / player.max_run_speed, 0.0, 1.0)
+
 
 func _build_base_pose() -> Dictionary:
 	var pose: Dictionary = {
@@ -125,6 +131,7 @@ func _build_base_pose() -> Dictionary:
 		pose["knee_deg"] = lerpf(105.0, 80.0, _jump_extension)
 	return pose
 
+
 func _is_idle_eligible() -> bool:
 	if player == null or not player.is_on_floor():
 		return false
@@ -134,10 +141,12 @@ func _is_idle_eligible() -> bool:
 		return false
 	return true
 
+
 func _idle_weight() -> float:
 	if not _is_idle_eligible():
 		return 0.0
 	return 1.0 - smoothstep(0.0, 0.12, _speed_ratio())
+
 
 func _apply_idle_motion(pose: Dictionary) -> void:
 	var idle_weight: float = _idle_weight()
@@ -148,6 +157,7 @@ func _apply_idle_motion(pose: Dictionary) -> void:
 	pose["upper_deg"] += idle_wave * idle_upper_amplitude_deg * idle_weight
 	pose["knee_deg"] -= idle_wave * idle_knee_amplitude_deg * idle_weight
 	pose["body_lean"] += deg_to_rad(cos(idle_phase) * idle_body_lean_deg * idle_weight)
+
 
 func _apply_landing_response(pose: Dictionary) -> void:
 	if player == null or not player.is_on_floor():
@@ -160,14 +170,17 @@ func _apply_landing_response(pose: Dictionary) -> void:
 	pose["knee_deg"] = lerpf(pose["knee_deg"], 140.0, _landing_compression)
 	pose["body_lean"] += 0.045 * _landing_compression
 
+
 func _apply_body_lean(pose: Dictionary, delta: float) -> void:
 	var target_body_lean: float = deg_to_rad(-max_drive_body_lean_deg) * _speed_ratio()
 	var response: float = 1.0 - exp(-10.0 * delta)
 	_smoothed_body_lean = lerpf(_smoothed_body_lean, target_body_lean, response)
 	pose["body_lean"] += _smoothed_body_lean
 
+
 func get_wheel_radius_world() -> float:
 	return WHEEL_RADIUS_SOURCE_PX * art_scale
+
 
 func _forward_velocity() -> float:
 	if player == null:
@@ -175,12 +188,14 @@ func _forward_velocity() -> float:
 	var facing_world_sign: float = -1.0 if _facing_left else 1.0
 	return player.velocity.x * facing_world_sign
 
+
 func _update_wheel_spin(delta: float) -> void:
 	var radius: float = get_wheel_radius_world()
 	if radius <= 0.001:
 		return
 	var angular_delta: float = _forward_velocity() * delta / radius
 	_wheel_spin = fmod(_wheel_spin - angular_delta, TAU)
+
 
 func _player_acceleration_x(delta: float) -> float:
 	if player == null:
@@ -190,15 +205,18 @@ func _player_acceleration_x(delta: float) -> float:
 	_previous_velocity_x = player.velocity.x
 	return acceleration_x
 
+
 func _local_forward_acceleration(acceleration_x: float) -> float:
 	var facing_sign: float = -1.0 if _facing_left else 1.0
 	return acceleration_x * facing_sign
+
 
 func _antenna_target(local_forward_accel: float, idle_weight: float) -> float:
 	var accel_ratio: float = clampf(local_forward_accel / antenna_acceleration_for_max_lag, -1.0, 1.0)
 	var target: float = deg_to_rad(accel_ratio * antenna_max_lag_deg)
 	target += deg_to_rad(antenna_idle_sway_deg) * sin(_visual_time * TAU * antenna_idle_sway_hz) * idle_weight
 	return target
+
 
 func _step_antenna_spring(target: float, delta: float) -> void:
 	var omega: float = TAU * antenna_spring_frequency_hz
@@ -213,6 +231,7 @@ func _step_antenna_spring(target: float, delta: float) -> void:
 	_antenna_angle = clampf(_antenna_angle, -limit, limit)
 	antenna_pivot.rotation = _antenna_angle
 
+
 func _update_antenna(target: float, delta: float) -> void:
 	var remaining: float = delta
 	while remaining > 0.0:
@@ -220,12 +239,14 @@ func _update_antenna(target: float, delta: float) -> void:
 		_step_antenna_spring(target, step)
 		remaining -= step
 
+
 func _update_antenna_motion(delta: float) -> void:
 	var acceleration_x: float = _player_acceleration_x(delta)
 	var local_forward_accel: float = _local_forward_acceleration(acceleration_x)
 	var target: float = _antenna_target(local_forward_accel, _idle_weight())
 	target += _antenna_state_bias()
 	_update_antenna(target, delta)
+
 
 func _antenna_state_bias() -> float:
 	if player == null:
@@ -236,6 +257,7 @@ func _antenna_state_bias() -> float:
 		var wobble: float = sin(_visual_time * TAU * antenna_charge_tremor_hz + PI * 0.5)
 		return deg_to_rad(wobble * antenna_charge_tremor_deg * player.charge_ratio)
 	return 0.0
+
 
 func _antenna_hits_world(angle: float) -> bool:
 	if player == null or not player.is_inside_tree():
@@ -261,6 +283,7 @@ func _antenna_hits_world(angle: float) -> bool:
 	ray_query.collide_with_bodies = true
 	return not space_state.intersect_ray(ray_query).is_empty()
 
+
 func _apply_antenna_overhead_contact() -> void:
 	var free_angle: float = _antenna_angle
 	if not _antenna_hits_world(free_angle):
@@ -284,12 +307,14 @@ func _apply_antenna_overhead_contact() -> void:
 	_antenna_angle = clear_angle
 	antenna_pivot.rotation = clear_angle
 
+
 func _update_eye() -> void:
 	var pulse: float = 0.88 + 0.12 * sin(_visual_time * TAU * 0.9)
 	var charge_boost: float = 0.0
 	if player != null and player.is_charging():
 		charge_boost = player.charge_ratio * 0.15
 	eye.modulate = Color(1.0, 1.0, 1.0, clampf(pulse + charge_boost, 0.0, 1.0))
+
 
 func _apply_pose(upper_degrees: float, knee_degrees: float, body_lean: float, wheel_spin: float) -> void:
 	var lower_world_degrees: float = upper_degrees + knee_degrees
@@ -307,9 +332,11 @@ func _apply_pose(upper_degrees: float, knee_degrees: float, body_lean: float, wh
 	knee_pivot.rotation = deg_to_rad(knee_degrees)
 	wheel_pivot.rotation = -upper_link_pivot.rotation - knee_pivot.rotation + wheel_spin
 
+
 func _on_player_jumped() -> void:
 	_jump_extension = 1.0
 	_antenna_velocity -= deg_to_rad(45.0)
+
 
 func _on_player_landed() -> void:
 	if player == null:
@@ -317,6 +344,3 @@ func _on_player_landed() -> void:
 	var impact_ratio: float = clampf(player.last_landing_speed / player.max_fall_speed, 0.0, 1.0)
 	_landing_compression = lerpf(0.35, 0.75, impact_ratio)
 	_antenna_velocity += deg_to_rad(100.0) * impact_ratio
-
-func get_visual_wheel_anchor() -> Vector2:
-	return wheel_anchor

@@ -10,11 +10,14 @@ signal depleted
 var current_health: int = 3
 var _invulnerability_remaining: float = 0.0
 
+
 func _ready() -> void:
 	current_health = max_health
 
+
 func _physics_process(delta: float) -> void:
 	_invulnerability_remaining = maxf(_invulnerability_remaining - delta, 0.0)
+
 
 func damage(amount: int = 1, lethal: bool = false) -> bool:
 	if current_health <= 0:
@@ -36,9 +39,7 @@ func damage(amount: int = 1, lethal: bool = false) -> bool:
 		depleted.emit()
 	return true
 
+
 func reset_health() -> void:
 	current_health = max_health
 	_invulnerability_remaining = 0.0
-
-func is_invulnerable() -> bool:
-	return _invulnerability_remaining > 0.0

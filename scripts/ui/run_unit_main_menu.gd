@@ -5,6 +5,7 @@ const BUTTON_THEME: Theme = preload("res://theme/thin_terminal_button_theme.tres
 const BUTTON_SIZE := Vector2(280.0, 50.0)
 const PRESSED_SCALE := Vector2(0.985, 0.985)
 
+
 func _ready() -> void:
 	super._ready()
 	var buttons: Array[Button] = [
@@ -26,6 +27,8 @@ func _ready() -> void:
 	options_button.text = "SYSTEM SETTINGS"
 	credits_button.text = "CREDITS / INTEL"
 	exit_button.text = "SHUT DOWN"
+
+
 func _setup_button(button: Button) -> void:
 	button.theme = BUTTON_THEME
 	button.custom_minimum_size = BUTTON_SIZE
@@ -35,20 +38,25 @@ func _setup_button(button: Button) -> void:
 	button.mouse_exited.connect(_release_button.bind(button))
 	_center_pivot(button)
 
+
 func _center_pivot(button: Button) -> void:
 	button.pivot_offset = button.size * 0.5
+
 
 func _press_button(button: Button) -> void:
 	_animate_button(button, PRESSED_SCALE, 0.05)
 
+
 func _release_button(button: Button) -> void:
 	_animate_button(button, Vector2.ONE, 0.08)
+
 
 func _animate_button(button: Button, target: Vector2, duration: float) -> void:
 	var tween := button.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", target, duration)
+
 
 func new_game() -> void:
 	SceneLoader.load_scene("res://scenes/level_selector.tscn")
